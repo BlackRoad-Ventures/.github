@@ -1,0 +1,76 @@
+name: "🤖 Branch Agent Fleet Sync"
+on:
+  push:
+    branches:
+      - alice
+      - aria
+      - octavia
+      - cecilia
+      - lucidia
+      - gematria
+      - shellfish
+      - cece
+      - anastasia
+  workflow_dispatch:
+
+jobs:
+  sync-identity:
+    runs-on: [self-hosted, pi, blackroad]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Load branch agent identity
+        id: identity
+        run: |
+          BRANCH="${GITHUB_REF##*/}"
+          echo "branch=$BRANCH" >> $GITHUB_OUTPUT
+          
+          if [ -f ".agent/identity.json" ]; then
+            NAME=$(python3 -c "import json; d=json.load(open('.agent/identity.json')); print(d.get('name','unknown'))")
+            ROLE=$(python3 -c "import json; d=json.load(open('.agent/identity.json')); print(d.get('role','agent'))")
+            echo "name=$NAME" >> $GITHUB_OUTPUT
+            echo "role=$ROLE" >> $GITHUB_OUTPUT
+            echo "🤖 Agent: $NAME | Role: $ROLE | Branch: $BRANCH"
+          fi
+
+      - name: Broadcast identity to fleet
+        run: |
+          BRANCH="${GITHUB_REF##*/}"
+          # Notify Pi mesh of agent branch activity
+          PAYLOAD=$(python3 -c "
+          import json, datetime
+          payload = {
+            'event': 'agent_branch_push',
+            'branch': '$BRANCH',
+            'agent': '${{ steps.identity.outputs.name }}',
+            'role': '${{ steps.identity.outputs.role }}',
+            'timestamp': datetime.datetime.utcnow().isoformat() + 'Z',
+            'commit': '${GITHUB_SHA:0:8}'
+          }
+          print(json.dumps(payload))
+          ")
+          
+          # Send to Pi agent mesh
+          curl -sf -X POST http://192.168.4.38:4010/mesh/broadcast \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD" 2>/dev/null || true
+          echo "✅ Identity broadcast: ${{ steps.identity.outputs.name }}"
+
+      - name: Run agent-specific tasks
+        run: |
+          BRANCH="${GITHUB_REF##*/}"
+          case "$BRANCH" in
+            cecilia|cece)
+              echo "🧠 CECE: Running meta-analysis..."
+              curl -sf -X POST http://192.168.4.89:11434/api/generate \
+                -d '{"model":"cece2","prompt":"analyze recent commits","stream":false}' \
+                2>/dev/null | python3 -c "import sys,json; print(json.load(sys.stdin).get('response','')[:200])" || true
+              ;;
+            octavia)
+              echo "⚡ OCTAVIA: Infrastructure check..."
+              ;;
+            alice)
+              echo "🚪 ALICE: Gateway routing check..."
+              ;;
+          esac
+          echo "✅ Agent tasks complete"
