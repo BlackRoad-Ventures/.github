@@ -1,56 +1,44 @@
 <div align="center">
-
-# BlackRoad Ventures
-
-**Business intelligence, finance, e-commerce, and blockchain tools.**
-
-[![Repos](https://img.shields.io/badge/repos-17-black?style=flat-square)](https://github.com/orgs/BlackRoad-Ventures/repositories)
-[![Status](https://img.shields.io/badge/status-active-brightgreen?style=flat-square)](https://blackroad.ai)
-
+  <h1>🛣️ BlackRoad OS</h1>
+  <p><strong>Your AI. Your Hardware. Your Rules.</strong></p>
+  <p>
+    <img src="https://img.shields.io/badge/Agents-30%2C000-FF1D6C?style=for-the-badge&logo=robot&logoColor=white"/>
+    <img src="https://img.shields.io/badge/Repos-1%2C825%2B-9C27B0?style=for-the-badge"/>
+    <img src="https://img.shields.io/badge/Orgs-17-2979FF?style=for-the-badge"/>
+  </p>
 </div>
 
----
+## Overview
 
-## 💼 What We Build
+BlackRoad OS is the infrastructure backbone for AI-first companies — powering 30,000+ concurrent AI agents across edge, cloud, and on-premise hardware.
 
-BlackRoad Ventures is the commercial and financial layer — crypto, analytics, e-commerce, and business intelligence tools.
+| Platform | Scale | Status |
+|----------|-------|--------|
+| AI Agents | 30,000 | ✅ Active |
+| Cloudflare Workers | 75+ | ✅ Active |
+| Raspberry Pi Fleet | 4 nodes | ✅ Active |
+| GitHub Actions | 50+ workflows | ✅ Active |
 
----
+## Core Systems
 
-## 📦 Repositories
+- **Tokenless Gateway** — All AI provider secrets live only here
+- **PS-SHA∞ Memory** — Hash-chained persistent AI memory  
+- **CECE Identity** — Portable AI identity across any provider
+- **30K Agent Mesh** — WebSocket + MQTT orchestration
 
-### Crypto & Web3
-| Repo | Upstream | Purpose |
-|------|----------|---------|
-| [`blackroad-bitcoin`](https://github.com/BlackRoad-Ventures/blackroad-bitcoin) | bitcoin/bitcoin | Bitcoin node |
-| [`blackroad-ethereum`](https://github.com/BlackRoad-Ventures/blackroad-ethereum) | ethereum/go-ethereum | Ethereum node (geth) |
-| [`blackroad-hardhat`](https://github.com/BlackRoad-Ventures/blackroad-hardhat) | NomicFoundation/hardhat | Smart contract dev |
-| [`blackroad-web3.js`](https://github.com/BlackRoad-Ventures/blackroad-web3.js) | web3/web3.js | Ethereum JavaScript API |
-| [`blackroad-ethers.js`](https://github.com/BlackRoad-Ventures/blackroad-ethers.js) | ethers-io/ethers.js | Ethereum library |
-| [`blackroad-roadcoin`](https://github.com/BlackRoad-Ventures/blackroad-roadcoin) | — | ROAD token + lottery |
+## Organizations
 
-### E-Commerce
-| Repo | Upstream | Purpose |
-|------|----------|---------|
-| [`blackroad-medusa`](https://github.com/BlackRoad-Ventures/blackroad-medusa) | medusajs/medusa | Open-source Shopify |
-| [`blackroad-saleor`](https://github.com/BlackRoad-Ventures/blackroad-saleor) | saleor/saleor | Headless e-commerce |
-| [`blackroad-woocommerce`](https://github.com/BlackRoad-Ventures/blackroad-woocommerce) | woocommerce/woocommerce | WordPress e-commerce |
+| Org | Purpose |
+|-----|---------|
+| [BlackRoad-OS-Inc](https://github.com/BlackRoad-OS-Inc) | Core platform & gateway |
+| [BlackRoad-OS](https://github.com/BlackRoad-OS) | OS, web, docs, agents |
+| [BlackRoad-AI](https://github.com/BlackRoad-AI) | ML models & inference |
+| [BlackRoad-Cloud](https://github.com/BlackRoad-Cloud) | Infrastructure & K8s |
+| [BlackRoad-Security](https://github.com/BlackRoad-Security) | Security & compliance |
 
-### Analytics & Intelligence
-| Repo | Upstream | Purpose |
-|------|----------|---------|
-| [`blackroad-plausible`](https://github.com/BlackRoad-Ventures/blackroad-plausible) | plausible/analytics | Privacy-first analytics |
-| [`blackroad-posthog`](https://github.com/BlackRoad-Ventures/blackroad-posthog) | PostHog/posthog | Product analytics |
-| [`blackroad-umami`](https://github.com/BlackRoad-Ventures/blackroad-umami) | umami-software/umami | Website analytics |
+## Brand
 
-### BlackRoad Originals
-| Repo | Purpose |
-|------|---------|
-| [`blackroad-pay`](https://github.com/BlackRoad-Ventures/blackroad-pay) | Payment processing layer |
-| [`blackroad-market`](https://github.com/BlackRoad-Ventures/blackroad-market) | Agent task marketplace |
-| [`blackroad-treasury`](https://github.com/BlackRoad-Ventures/blackroad-treasury) | Asset management system |
+Primary: `#FF1D6C` · Gradient: `#F5A623 → #FF1D6C → #9C27B0 → #2979FF`
 
 ---
-
-> Part of [BlackRoad OS](https://github.com/BlackRoad-OS-Inc) — 17 orgs, 1,825+ repos.
-> © BlackRoad OS, Inc. All rights reserved.
+*© BlackRoad OS, Inc. All rights reserved. Proprietary — not open source.*
