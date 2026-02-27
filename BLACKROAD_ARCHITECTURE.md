@@ -218,7 +218,7 @@ Every task entered into the system follows a ten-step scaffold for high-fidelity
 
 ## BlackRoad CLI v3 Layered Architecture
 
-The BlackRoad CLI v3 loads eight distinct layers of functionality:
+The BlackRoad CLI v3 is built on eight layers. Layers 1–2 handle foundational I/O and authentication. Layers 3–8 define the active functional stack:
 
 | Layer | Name | Function |
 |-------|------|----------|
