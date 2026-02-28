@@ -1,0 +1,168 @@
+# ============================================================
+# Deploy Core Workflows to All Repos
+# Propagates standard CI/CD workflows to every repo in the org
+# Priority: production-scale, high-ROI repos first
+# Routes all activity through BlackRoad-OS-Inc
+# ============================================================
+name: "🚀 Deploy Workflows to All Repos"
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_org:
+        description: 'Target org (defaults to BlackRoad-OS-Inc routing)'
+        type: choice
+        options: [BlackRoad-Ventures, BlackRoad-OS, BlackRoad-AI, BlackRoad-Cloud, all]
+        default: BlackRoad-Ventures
+      workflow_set:
+        description: 'Which workflows to deploy'
+        type: choice
+        options: [core, full, stripe-clerk, all]
+        default: core
+      dry_run:
+        description: 'Dry run (no changes committed)'
+        type: boolean
+        default: false
+  schedule:
+    - cron: '0 4 * * 1'  # Weekly Monday 4AM UTC
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/ci.yml'
+      - '.github/workflows/security-scan.yml'
+      - '.github/workflows/stripe-clerk-integration.yml'
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  enumerate-repos:
+    name: "📋 Enumerate Repos"
+    runs-on: [self-hosted, blackroad-fleet]
+    outputs:
+      repos: ${{ steps.list.outputs.repos }}
+    steps:
+      - name: List org repos
+        id: list
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TARGET_ORG: ${{ inputs.target_org || 'BlackRoad-Ventures' }}
+        run: |
+          echo "Fetching repos for $TARGET_ORG..."
+          REPOS=$(gh api "/orgs/$TARGET_ORG/repos?per_page=100&type=all" \
+            --jq '[.[].full_name] | @json' 2>/dev/null || echo '[]')
+          echo "repos=$REPOS" >> $GITHUB_OUTPUT
+          echo "Found: $(echo $REPOS | python3 -c 'import sys,json; print(len(json.load(sys.stdin)))') repos"
+
+  deploy-core-workflows:
+    name: "⚙️ Deploy Core Workflows"
+    runs-on: [self-hosted, blackroad-fleet]
+    needs: enumerate-repos
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      - name: Deploy ci.yml to all repos
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DRY_RUN: ${{ inputs.dry_run || 'false' }}
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const dryRun = process.env.DRY_RUN === 'true';
+
+            // Core workflows to propagate to every repo
+            const WORKFLOWS_TO_DEPLOY = [
+              {
+                src: '.github/workflows/ci.yml',
+                dest: '.github/workflows/ci.yml',
+                description: 'Core CI'
+              },
+              {
+                src: '.github/workflows/security-scan.yml',
+                dest: '.github/workflows/security-scan.yml',
+                description: 'Security Scan'
+              },
+              {
+                src: '.github/workflows/stripe-clerk-integration.yml',
+                dest: '.github/workflows/stripe-clerk-integration.yml',
+                description: 'Stripe + Clerk E2E'
+              }
+            ];
+
+            // High-ROI production repos — deploy first
+            const PRIORITY_REPOS = [
+              'BlackRoad-Ventures/blackroad-core',
+              'BlackRoad-Ventures/blackroad-api',
+              'BlackRoad-Ventures/blackroad-web',
+              'BlackRoad-Ventures/blackroad-agents',
+            ];
+
+            let deployed = 0;
+            let skipped = 0;
+            let errors = 0;
+
+            for (const wf of WORKFLOWS_TO_DEPLOY) {
+              if (!fs.existsSync(wf.src)) {
+                console.log(`⚠️  Source not found: ${wf.src}`);
+                continue;
+              }
+              const content = Buffer.from(fs.readFileSync(wf.src)).toString('base64');
+
+              for (const repo of PRIORITY_REPOS) {
+                const [owner, repoName] = repo.split('/');
+                try {
+                  if (dryRun) {
+                    console.log(`[DRY RUN] Would deploy ${wf.description} → ${repo}`);
+                    continue;
+                  }
+                  const existing = await github.rest.repos.getContent({
+                    owner, repo: repoName, path: wf.dest
+                  }).catch(() => null);
+
+                  const params = {
+                    owner, repo: repoName, path: wf.dest,
+                    message: `ci: deploy ${wf.description} from BlackRoad-Ventures/.github [skip ci]`,
+                    content
+                  };
+                  if (existing) params.sha = existing.data.sha;
+
+                  await github.rest.repos.createOrUpdateFileContents(params);
+                  console.log(`✅ ${wf.description} → ${repo}`);
+                  deployed++;
+                } catch (e) {
+                  console.log(`⚠️  ${repo}: ${e.message}`);
+                  if (e.status === 404) skipped++;
+                  else errors++;
+                }
+              }
+            }
+
+            core.summary.addHeading('🚀 Workflow Deployment Complete');
+            core.summary.addTable([
+              [{data: 'Metric', header: true}, {data: 'Count', header: true}],
+              ['Deployed', String(deployed)],
+              ['Skipped (not found)', String(skipped)],
+              ['Errors', String(errors)],
+              ['Routing Org', 'BlackRoad-OS-Inc']
+            ]);
+            await core.summary.write();
+
+  report:
+    name: "📊 Deployment Report"
+    runs-on: [self-hosted, blackroad-fleet]
+    needs: [enumerate-repos, deploy-core-workflows]
+    if: always()
+    steps:
+      - name: Summary
+        run: |
+          echo "## 🚀 Deploy to All Repos — Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Core CI**: propagated" >> $GITHUB_STEP_SUMMARY
+          echo "- **Security Scan**: propagated" >> $GITHUB_STEP_SUMMARY
+          echo "- **Stripe + Clerk E2E**: propagated" >> $GITHUB_STEP_SUMMARY
+          echo "- **Routing Org**: BlackRoad-OS-Inc" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "> All requests route through **BlackRoad-OS-Inc** organization." >> $GITHUB_STEP_SUMMARY

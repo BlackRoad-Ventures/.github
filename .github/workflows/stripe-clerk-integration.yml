@@ -1,0 +1,153 @@
+# ============================================================
+# BlackRoad E2E — Stripe + Clerk Integration
+# Validates Stripe payments and Clerk auth are live
+# Routes service calls through BlackRoad-OS-Inc
+# ============================================================
+name: "💳 Stripe + Clerk E2E Integration"
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - '.github/workflows/stripe-clerk-integration.yml'
+  schedule:
+    - cron: '0 */6 * * *'  # Every 6 hours
+  workflow_dispatch:
+    inputs:
+      service:
+        description: 'Service to check'
+        type: choice
+        options: [all, stripe, clerk]
+        default: all
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  stripe-health:
+    name: "💳 Stripe — Webhook + API Health"
+    runs-on: [self-hosted, blackroad-fleet]
+    if: ${{ inputs.service == 'all' || inputs.service == 'stripe' || github.event_name != 'workflow_dispatch' }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      - name: Validate Stripe API key
+        env:
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+        run: |
+          if [[ -z "$STRIPE_SECRET_KEY" ]]; then
+            echo "⚠️  STRIPE_SECRET_KEY not set — add secret to repo"
+            exit 0
+          fi
+          STATUS=$(curl -sf -o /dev/null -w "%{http_code}" \
+            -H "Authorization: Bearer $STRIPE_SECRET_KEY" \
+            https://api.stripe.com/v1/balance)
+          if [[ "$STATUS" == "200" ]]; then
+            echo "✅ Stripe API key valid (balance endpoint reachable)"
+          else
+            echo "❌ Stripe API returned HTTP $STATUS"
+            exit 1
+          fi
+
+      - name: Check Stripe webhook endpoint
+        env:
+          STRIPE_WEBHOOK_URL: ${{ secrets.STRIPE_WEBHOOK_URL || 'https://api.blackroad.io/webhooks/stripe' }}
+        run: |
+          echo "Webhook target: $STRIPE_WEBHOOK_URL"
+          STATUS=$(curl -sf -o /dev/null -w "%{http_code}" -X POST \
+            -H "Content-Type: application/json" \
+            -d '{"type":"ping"}' \
+            "$STRIPE_WEBHOOK_URL" 2>/dev/null || echo "000")
+          case "$STATUS" in
+            200|204) echo "✅ Stripe webhook endpoint reachable" ;;
+            401|403) echo "✅ Webhook endpoint live (auth required)" ;;
+            000)     echo "⚠️  Webhook endpoint unreachable — check deployment" ;;
+            *)       echo "⚠️  Webhook returned HTTP $STATUS" ;;
+          esac
+
+      - name: Report Stripe status
+        run: |
+          echo "## 💳 Stripe Integration Status" >> $GITHUB_STEP_SUMMARY
+          echo "- API Health: checked" >> $GITHUB_STEP_SUMMARY
+          echo "- Webhook: checked" >> $GITHUB_STEP_SUMMARY
+          echo "- Org: BlackRoad-OS-Inc" >> $GITHUB_STEP_SUMMARY
+
+  clerk-health:
+    name: "🔑 Clerk — Auth Health Check"
+    runs-on: [self-hosted, blackroad-fleet]
+    if: ${{ inputs.service == 'all' || inputs.service == 'clerk' || github.event_name != 'workflow_dispatch' }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      - name: Validate Clerk API key
+        env:
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+        run: |
+          if [[ -z "$CLERK_SECRET_KEY" ]]; then
+            echo "⚠️  CLERK_SECRET_KEY not set — add secret to repo"
+            exit 0
+          fi
+          STATUS=$(curl -sf -o /dev/null -w "%{http_code}" \
+            -H "Authorization: Bearer $CLERK_SECRET_KEY" \
+            https://api.clerk.com/v1/users?limit=1)
+          if [[ "$STATUS" == "200" ]]; then
+            echo "✅ Clerk API key valid"
+          else
+            echo "❌ Clerk API returned HTTP $STATUS"
+            exit 1
+          fi
+
+      - name: Check Clerk JWKS endpoint
+        env:
+          CLERK_FRONTEND_API: ${{ secrets.CLERK_FRONTEND_API || '' }}
+        run: |
+          if [[ -n "$CLERK_FRONTEND_API" ]]; then
+            JWKS_URL="https://${CLERK_FRONTEND_API}/.well-known/jwks.json"
+          else
+            JWKS_URL="https://clerk.blackroad.io/.well-known/jwks.json"
+          fi
+          echo "JWKS target: $JWKS_URL"
+          STATUS=$(curl -sf -o /dev/null -w "%{http_code}" "$JWKS_URL" 2>/dev/null || echo "000")
+          case "$STATUS" in
+            200) echo "✅ Clerk JWKS endpoint reachable" ;;
+            000) echo "⚠️  JWKS endpoint unreachable — check Clerk domain config" ;;
+            *)   echo "⚠️  JWKS returned HTTP $STATUS" ;;
+          esac
+
+      - name: Report Clerk status
+        run: |
+          echo "## 🔑 Clerk Integration Status" >> $GITHUB_STEP_SUMMARY
+          echo "- API Health: checked" >> $GITHUB_STEP_SUMMARY
+          echo "- JWKS: checked" >> $GITHUB_STEP_SUMMARY
+          echo "- Org: BlackRoad-OS-Inc" >> $GITHUB_STEP_SUMMARY
+
+  e2e-routing:
+    name: "🚦 E2E — Route to BlackRoad-OS-Inc"
+    runs-on: [self-hosted, blackroad-fleet]
+    needs: [stripe-health, clerk-health]
+    if: always()
+    steps:
+      - name: Verify BlackRoad-OS-Inc gateway
+        env:
+          BR_GATEWAY: ${{ secrets.BLACKROAD_API_GATEWAY || 'https://api.blackroad.io' }}
+        run: |
+          echo "=== BlackRoad-OS-Inc Request Routing ==="
+          STATUS=$(curl -sf -o /dev/null -w "%{http_code}" "${BR_GATEWAY}/health" 2>/dev/null || echo "000")
+          case "$STATUS" in
+            200|204) echo "✅ BlackRoad-OS-Inc gateway live: $BR_GATEWAY" ;;
+            000)     echo "⚠️  Gateway unreachable — check Pi fleet / Railway deployment" ;;
+            *)       echo "⚠️  Gateway returned HTTP $STATUS" ;;
+          esac
+
+      - name: E2E summary
+        run: |
+          echo "## 🚦 E2E Routing Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Service | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Stripe  | ${{ needs.stripe-health.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Clerk   | ${{ needs.clerk-health.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Gateway | BlackRoad-OS-Inc |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "> All requests routed through **BlackRoad-OS-Inc** org." >> $GITHUB_STEP_SUMMARY

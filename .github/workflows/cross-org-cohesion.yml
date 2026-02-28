@@ -15,7 +15,7 @@ on:
         required: false
         default: 'all'
         type: choice
-        options: [all, BlackRoad-OS, BlackRoad-AI, BlackRoad-Cloud, BlackRoad-Security]
+        options: [all, BlackRoad-OS-Inc, BlackRoad-OS, BlackRoad-AI, BlackRoad-Cloud, BlackRoad-Security]
 
 permissions:
   contents: write
@@ -55,9 +55,10 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       - name: Propagate CLAUDE.md to key repos
         run: |
-          ORGS=("BlackRoad-OS" "BlackRoad-AI" "blackboxprogramming")
+          ORGS=("BlackRoad-OS-Inc" "BlackRoad-OS" "BlackRoad-AI" "blackboxprogramming")
           KEY_REPOS=("blackroad-core" "blackroad-agents" "blackroad-os")
           echo "Would sync CLAUDE.md to ${#ORGS[@]} orgs × ${#KEY_REPOS[@]} repos"
+          echo "Primary routing org: BlackRoad-OS-Inc"
           echo "Use: gh api PATCH /repos/ORG/REPO/contents/CLAUDE.md"
 
   register-branch-agents:

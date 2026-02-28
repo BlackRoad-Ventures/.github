@@ -19,7 +19,7 @@ on:
       platform:
         description: 'Platform to integrate'
         type: choice
-        options: [all, salesforce, railway, cloudflare, huggingface, pi-models]
+        options: [all, salesforce, railway, cloudflare, huggingface, pi-models, stripe, clerk]
         default: all
 
 jobs:
@@ -100,3 +100,41 @@ jobs:
           echo ""
           echo "=== Gematria Model Server (via internal) ==="
           curl -sf http://192.168.4.38:4010/health 2>/dev/null && echo "agent API healthy"
+
+  stripe:
+    name: "💳 Stripe — Payments Health"
+    runs-on: [self-hosted, blackroad-fleet]
+    permissions: {}
+    if: ${{ inputs.platform == 'all' || inputs.platform == 'stripe' || github.event_name != 'workflow_dispatch' }}
+    steps:
+      - name: Validate Stripe API
+        env:
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+        run: |
+          if [[ -z "$STRIPE_SECRET_KEY" ]]; then
+            echo "⚠️  STRIPE_SECRET_KEY not set"
+            exit 0
+          fi
+          STATUS=$(curl -sf -o /dev/null -w "%{http_code}" \
+            -H "Authorization: Bearer $STRIPE_SECRET_KEY" \
+            https://api.stripe.com/v1/balance)
+          [[ "$STATUS" == "200" ]] && echo "✅ Stripe API healthy" || echo "❌ Stripe HTTP $STATUS"
+
+  clerk:
+    name: "🔑 Clerk — Auth Health"
+    runs-on: [self-hosted, blackroad-fleet]
+    permissions: {}
+    if: ${{ inputs.platform == 'all' || inputs.platform == 'clerk' || github.event_name != 'workflow_dispatch' }}
+    steps:
+      - name: Validate Clerk API
+        env:
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+        run: |
+          if [[ -z "$CLERK_SECRET_KEY" ]]; then
+            echo "⚠️  CLERK_SECRET_KEY not set"
+            exit 0
+          fi
+          STATUS=$(curl -sf -o /dev/null -w "%{http_code}" \
+            -H "Authorization: Bearer $CLERK_SECRET_KEY" \
+            https://api.clerk.com/v1/users?limit=1)
+          [[ "$STATUS" == "200" ]] && echo "✅ Clerk API healthy" || echo "❌ Clerk HTTP $STATUS"
