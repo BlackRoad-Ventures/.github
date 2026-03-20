@@ -1,34 +1,25 @@
-<div align="center">
-
 # BlackRoad Ventures
 
-**Finance and investment — portfolio tracking, deal flow, partnerships.**
-
-[![Website](https://img.shields.io/badge/blackroad--ventures.github.io-000?style=flat-square&logo=github)](https://blackroad-ventures.github.io)
-
-</div>
+**A division of [BlackRoad OS, Inc.](https://github.com/BlackRoad-OS-Inc) — Proprietary Software**
 
 ---
 
-## Repositories
+## About
 
-| Repository | Description |
-|---|---|
-| [partnerships](https://github.com/BlackRoad-Ventures/partnerships) | Strategic partnerships and collaborations |
-| [portfolio](https://github.com/BlackRoad-Ventures/portfolio) | Portfolio companies and investments |
+BlackRoad Ventures is the investment and partnerships division of BlackRoad OS. BlackRoad Ventures manages deal flow, portfolio tracking, LP portals, and startup metrics. The investment arm of the BlackRoad ecosystem.
 
-<details>
-<summary>Archived</summary>
+All repositories in this organization are proprietary to BlackRoad OS, Inc. Source code is publicly visible for transparency. Commercial use, forking, and redistribution are prohibited.
 
-| Repository | Description |
-|---|---|
-| [blackroad-startup-metrics](https://github.com/BlackRoad-Ventures/blackroad-startup-metrics) | Startup KPI and metrics tracking |
-| [blackroad-portfolio-tracker](https://github.com/BlackRoad-Ventures/blackroad-portfolio-tracker) | Investment portfolio tracking and analytics |
-| [blackroad-deal-flow](https://github.com/BlackRoad-Ventures/blackroad-deal-flow) | Investment deal flow and due diligence tracker |
-| [blackroad-lp-portal](https://github.com/BlackRoad-Ventures/blackroad-lp-portal) | Limited partner portal and fund reporting |
+## Parent Organization
 
-</details>
+This division operates under [BlackRoad-OS-Inc](https://github.com/BlackRoad-OS-Inc), the corporate root of the BlackRoad ecosystem. See the parent org for the full technology stack, product catalog, and organizational structure.
+
+## License
+
+Proprietary — BlackRoad OS, Inc. See individual repositories for license terms.
 
 ---
 
-<sub>BlackRoad OS, Inc. — [blackroad.io](https://blackroad.io)</sub>
+**BlackRoad OS — Pave Tomorrow.**
+
+*Copyright 2024-2026 BlackRoad OS, Inc. All Rights Reserved.*
