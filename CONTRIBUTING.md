@@ -1,58 +1,43 @@
 # Contributing to BlackRoad OS
 
-## 🔒 Proprietary Notice
+Thank you for your interest in contributing.
 
-This is a **PROPRIETARY** repository owned by BlackRoad OS, Inc.
+## Getting Started
 
-All contributions become the property of BlackRoad OS, Inc.
+1. Fork the repository
+2. Create a feature branch from `main`
+3. Make your changes
+4. Submit a pull request
 
-## 🎨 BlackRoad Brand System
+## Pull Request Guidelines
 
-**CRITICAL:** All UI/design work MUST follow the official brand system!
+- Keep PRs focused on a single change
+- Write clear commit messages explaining *why*, not just *what*
+- Ensure your branch is up to date with `main` before submitting
+- All PRs to main/master require review (enterprise policy)
 
-### Required Colors:
-- **Hot Pink:** #FF1D6C (primary accent)
-- **Amber:** #F5A623
-- **Electric Blue:** #2979FF
-- **Violet:** #9C27B0
-- **Background:** #000000 (black)
-- **Text:** #FFFFFF (white)
+## Branch Naming
 
-### Forbidden Colors (DO NOT USE):
-❌ #FF9D00, #FF6B00, #FF0066, #FF006B, #D600AA, #7700FF, #0066FF
+- `feature/description` — new functionality
+- `fix/description` — bug fixes
+- `docs/description` — documentation changes
 
-### Golden Ratio Spacing:
-φ (phi) = 1.618
+## Code Standards
 
-**Spacing scale:** 8px → 13px → 21px → 34px → 55px → 89px → 144px
+- Follow existing code style in the repository
+- Add tests for new functionality where applicable
+- Do not commit secrets, credentials, or environment files
 
-### Gradients:
-```css
-background: linear-gradient(135deg, #FF1D6C 38.2%, #F5A623 61.8%);
-```
+## Reporting Issues
 
-### Typography:
-- **Font:** SF Pro Display, -apple-system, sans-serif
-- **Line height:** 1.618
+- Use the repository's issue templates when available
+- Include steps to reproduce for bug reports
+- Check existing issues before creating duplicates
 
-## 📝 How to Contribute
+## License
 
-1. Fork the repository (for testing purposes only)
-2. Create a feature branch
-3. Follow BlackRoad brand guidelines
-4. Submit PR with detailed description
-5. All code becomes BlackRoad OS, Inc. property
+By contributing, you agree that your contributions will be licensed under the repository's existing license. BlackRoad OS repositories use a proprietary license unless otherwise stated.
 
-## ⚖️ Legal
+## Questions?
 
-By contributing, you agree:
-- All code becomes property of BlackRoad OS, Inc.
-- You have rights to contribute the code
-- Contributions are NOT for commercial resale
-- Testing and educational purposes only
-
-## 📧 Contact
-
-**Email:** blackroad.systems@gmail.com
-**CEO:** Alexa Amundson
-**Organization:** BlackRoad OS, Inc.
+Open a discussion or reach out at **hello@blackroad.io**.
